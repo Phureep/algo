@@ -1,2 +1,12 @@
-SIgma,1.05 seconds
-Jirateep,1.56 seconds
+Sigma,3.12 seconds
+Helo,1.39 seconds
+John,2.94 seconds
+BigMac,2.23 seconds
+aw,1.67 seconds
+AA,1.36 seconds
+Marine,2.56 seconds
+PoomK,3.95 seconds
+James,5.30 seconds
+AAAAA,6.59 seconds
+Sigma,5.62 seconds
+a,6.17 seconds

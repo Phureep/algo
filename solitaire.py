@@ -1,12 +1,14 @@
-SOLITAIRE_WIDTH = 1000
-SOLITAIRE_HEIGHT = 500
-
 import random
-import time  # To track time
+import time
+import subprocess  # Import subprocess to run leaderboard.py
 import flet as ft
+import os  # Import os to handle paths
 from card import Card
 from slot import Slot
-from dev import save_winner_data  # Import function to save winner data
+from dev import save_winner_data
+
+SOLITAIRE_WIDTH = 1000
+SOLITAIRE_HEIGHT = 800
 
 class Suite:
     def __init__(self, suite_name, suite_color):
@@ -33,28 +35,6 @@ class Solitaire(ft.Stack):
             self.page.on_keyboard_event = self.keyboard_event
             print("Keyboard event listener registered.")  # Debugging line
 
-        # Create and position the button
-        self.create_button()
-
-    def create_button(self):
-        # Create a button and set its properties
-        button = ft.ElevatedButton(
-            text="Finish Game",
-            on_click=self.finish_game,  # Set the action for the button click
-            width=150,
-            height=50,
-        )
-
-        # Add the button to the bottom corner
-        self.controls.append(
-            ft.Row(
-                [button],
-                alignment=ft.MainAxisAlignment.END,
-                spacing=10,
-                expand=True,
-            )
-        )
-
     def finish_game(self, e):
         """Function to finish the game when the button is clicked."""
         print("Finish Game button clicked!")
@@ -64,6 +44,7 @@ class Solitaire(ft.Stack):
         self.create_card_deck()
         self.create_slots()
         self.deal_cards()
+        #Helo
 
     def create_card_deck(self):
         suites = [
@@ -104,13 +85,13 @@ class Solitaire(ft.Stack):
             self.foundations.append(
                 Slot(solitaire=self, top=0, left=x, border=ft.border.all(1, "outline"))
             )
-            x += 100
+            x += 170
 
         self.tableau = []
         x = 0
         for i in range(7):
-            self.tableau.append(Slot(solitaire=self, top=150, left=x, border=None))
-            x += 100
+            self.tableau.append(Slot(solitaire=self, top=250, left=x, border=None))
+            x += 170
 
         self.controls.append(self.stock)
         self.controls.append(self.waste)
@@ -196,10 +177,37 @@ class Solitaire(ft.Stack):
                 card.left = random.randint(0, SOLITAIRE_WIDTH)  # Randomize horizontal position
                 self.update()  # Refresh the UI to reflect the changes
         
-        # Display winning message
+        # Display winning message and add "Show Leaderboard" button
         self.controls.append(
-            ft.AlertDialog(title=ft.Text(f"Congratulations {self.username}! You won in {winning_time:.2f} seconds!"), open=True)
+            ft.Column(
+                [
+                    ft.AlertDialog(
+                        title=ft.Text(f"Congratulations {self.username}! You won in {winning_time:.2f} seconds!"),
+                        open=True,
+                    ),
+                    ft.ElevatedButton(
+                        text="Show Leaderboard",
+                        on_click=self.show_leaderboard,  # Set the action for the button click
+                        width=200,
+                        height=50,
+                    )
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            )
         )
+
+    def show_leaderboard(self, e):
+        """Run the leaderboard.py file when the button is clicked."""
+        # Get the absolute path of the current script
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        # Construct the path to leaderboard.py relative to the current directory
+        leaderboard_path = os.path.join(current_directory, "leaderboard.py")
+        
+        try:
+            # Run the leaderboard.py file
+            subprocess.run(["python", leaderboard_path])
+        except Exception as ex:
+            print(f"Error running leaderboard.py: {ex}")
 
     def keyboard_event(self, e):
         print(f"Key pressed: {e.key}")  # Print the key pressed for debugging

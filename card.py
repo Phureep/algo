@@ -1,9 +1,9 @@
 import flet as ft
 
-CARD_WIDTH = 70
-CARD_HEIGTH = 100
-DROP_PROXIMITY = 30
-CARD_OFFSET = 20
+CARD_WIDTH = 140
+CARD_HEIGTH = 200
+DROP_PROXIMITY = 60
+CARD_OFFSET = 40
 
 
 class Card(ft.GestureDetector):

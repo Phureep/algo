@@ -1,72 +1,69 @@
 import flet as ft
+import os
 
-# Function to read and parse the leaderboard from a text file
-def read_leaderboard(file_path):
-    leaderboard = []
-    with open(file_path, 'r') as file:
-        for line in file:
-            username, time_str = line.strip().split(',')
-            time_seconds = float(time_str.split()[0])  # Convert the time to float
-            leaderboard.append((username.strip(), time_seconds))
-    # Sort the leaderboard by time (fastest first)
-    leaderboard.sort(key=lambda x: x[1])
-    return leaderboard
+# Function to read the leaderboard data from the txt file and keep only the lowest time for each user
+def read_leaderboard_data():
+    script_dir = os.path.dirname(__file__)
+    file_path = os.path.join(script_dir, "player_data.txt")
+    leaderboard = {}
+    try:
+        with open(file_path, "r") as file:
+            for line in file:
+                line = line.strip()
+                if line:  # Check if the line is not empty
+                    try:
+                        # Split the line to extract username and time
+                        parts = line.split(",")
+                        username = parts[0].strip()
+                        time_str = parts[1].strip().replace(" seconds", "")
+                        time_in_seconds = float(time_str)
+                        
+                        # If username is already in leaderboard, keep the lowest time
+                        if username in leaderboard:
+                            leaderboard[username] = min(leaderboard[username], time_in_seconds)
+                        else:
+                            leaderboard[username] = time_in_seconds
+                    except (ValueError, IndexError):
+                        print(f"Error parsing line: {line}")
+    except Exception as e:
+        print(f"Error reading file: {e}")
+    return list(leaderboard.items())
 
+# Format time to two decimal places for display
+def format_time(seconds):
+    return f"{seconds:.2f} seconds"
+
+# Flet UI for the leaderboard
 def main(page: ft.Page):
-    # Set the page title and theme
     page.title = "Leaderboard"
-    page.theme_mode = ft.ThemeMode.LIGHT  # or DARK for dark mode
+    page.scroll = "auto"
     
-    # Set page background color
-    page.bgcolor = ft.colors.BLUE_GREY_50
+    # Load leaderboard data and keep only the lowest time for each user
+    leaderboard = read_leaderboard_data()
+    
+    # Sort leaderboard by time (ascending) since lower seconds is better
+    leaderboard.sort(key=lambda x: x[1])
+    
+    # UI Components
+    title = ft.Text("Leaderboard (Best Times)", size=30, weight="bold", text_align="center")
+    leaderboard_table = ft.Column()
 
-    # Read the leaderboard data from the text file
-    leaderboard_data = read_leaderboard("player_data.txt")
-    
-    # Create a list to hold leaderboard items
-    leaderboard_items = []
-    for username, time in leaderboard_data:
-        leaderboard_items.append(
+    # Add rows to the leaderboard UI
+    for idx, (username, seconds) in enumerate(leaderboard, start=1):
+        formatted_time = format_time(seconds)
+        leaderboard_table.controls.append(
             ft.Row(
-                [
-                    ft.Text(username, size=20, weight=ft.FontWeight.BOLD, color=ft.colors.GREEN_700),
-                    ft.Spacer(),
-                    ft.Text(f"{time:.2f} seconds", size=20, weight=ft.FontWeight.NORMAL, color=ft.colors.BLUE_800),
+                controls=[
+                    ft.Text(f"{idx}. {username}", size=20),
+                    ft.Text(f"Time: {formatted_time}", size=20, weight="bold"),
                 ],
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                padding=ft.padding.symmetric(vertical=5),
-                bgcolor=ft.colors.WHITE,
-                border_radius=5,
-                width=400,
-                height=50,
-                margin=ft.margin.symmetric(vertical=2),
+                alignment="spaceBetween",
             )
         )
+    
+    # Add components to the page
+    page.add(title, leaderboard_table)
 
-    # Add the leaderboard header and items to the page
-    page.add(
-        ft.Column(
-            controls=[
-                ft.Container(
-                    content=ft.Text("Leaderboard", size=30, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_900),
-                    alignment=ft.alignment.center,
-                    padding=ft.padding.symmetric(vertical=10),
-                ),
-                ft.Container(
-                    content=ft.Column(
-                        controls=leaderboard_items
-                    ),
-                    bgcolor=ft.colors.WHITE,
-                    border_radius=10,
-                    padding=ft.padding.all(10),
-                    width=420,
-                    alignment=ft.MainAxisAlignment.START,
-                ),
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-        )
-    )
-
+# Run the app
 if __name__ == "__main__":
-    # Run the Flet app
     ft.app(target=main)
