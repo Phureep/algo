@@ -18,3 +18,4 @@ A,3.16 seconds
 A,7.45 seconds
 AA,1.86 seconds
 Zen,7.64 seconds
+us,19.57 seconds
